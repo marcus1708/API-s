@@ -38,11 +38,22 @@ def _base_url(context):
 
 
 def _redis_client(context):
-    """Cria (lazy) e retorna o cliente Redis para inspeção de cache."""
-    if not hasattr(context, "_redis_cli") or context._redis_cli is None:
-        redis_url = os.environ.get("REDIS_URL", "redis://localhost:6379")
-        context._redis_cli = redis.from_url(redis_url, decode_responses=True)
+    if context.__dict__.get("_redis_cli") is None:
+        import os
+        import redis
+
+        redis_url = os.getenv(
+            "REDIS_URL",
+            "redis://127.0.0.1:6379"
+        )
+
+        context._redis_cli = redis.Redis.from_url(
+            redis_url,
+            decode_responses=True
+        )
+
     return context._redis_cli
+
 
 
 def _pubsub_client(context):
