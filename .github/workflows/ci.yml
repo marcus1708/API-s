@@ -1,0 +1,220 @@
+name: API automation
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+permissions:
+  contents: read
+
+env:
+  PORT: 3333
+  BASE_URL: http://127.0.0.1:3333
+  MONGO_URL: mongodb://127.0.0.1:27017/api_test
+  REDIS_URL: redis://127.0.0.1:6379
+  REDIS_PUBSUB_CHANNEL: usuarios:eventos
+  CHECK_DATADOG: 'false'
+
+jobs:
+  cypress:
+    name: Cypress
+    runs-on: ubuntu-24.04
+    services:
+      mongodb:
+        image: mongo:8.0.12
+        ports:
+          - 27017:27017
+      redis:
+        image: redis:7.4.5
+        ports:
+          - 6379:6379
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
+      - name: Setup Node.js
+        uses: actions/setup-node@v4.4.0
+        with:
+          node-version: 22.14.0
+      - name: Install API dependencies
+        run: npm ci
+      - name: Install Cypress dependencies
+        working-directory: Cypress
+        run: npm ci
+      - name: Start API
+        run: node src/server.js > api.log 2>&1 &
+      - name: Wait for API
+        run: |
+          for attempt in {1..60}; do
+            if curl --fail --silent "$BASE_URL/usuarios" > /dev/null; then exit 0; fi
+            sleep 2
+          done
+          cat api.log
+          exit 1
+      - name: Run Cypress
+        working-directory: Cypress
+        run: npx cypress run --config video=false
+
+  playwright:
+    name: Playwright
+    runs-on: ubuntu-24.04
+    services:
+      mongodb:
+        image: mongo:8.0.12
+        ports:
+          - 27017:27017
+      redis:
+        image: redis:7.4.5
+        ports:
+          - 6379:6379
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
+      - name: Setup Node.js
+        uses: actions/setup-node@v4.4.0
+        with:
+          node-version: 22.14.0
+      - name: Install API dependencies
+        run: npm ci
+      - name: Install Playwright dependencies
+        working-directory: Playwright
+        run: npm ci
+      - name: Start API
+        run: node src/server.js > api.log 2>&1 &
+      - name: Wait for API
+        run: |
+          for attempt in {1..60}; do
+            if curl --fail --silent "$BASE_URL/usuarios" > /dev/null; then exit 0; fi
+            sleep 2
+          done
+          cat api.log
+          exit 1
+      - name: Run Playwright
+        working-directory: Playwright
+        run: npm test
+
+  robot:
+    name: Robot Framework
+    runs-on: ubuntu-24.04
+    services:
+      mongodb:
+        image: mongo:8.0.12
+        ports:
+          - 27017:27017
+      redis:
+        image: redis:7.4.5
+        ports:
+          - 6379:6379
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
+      - name: Setup Node.js
+        uses: actions/setup-node@v4.4.0
+        with:
+          node-version: 22.14.0
+      - name: Setup Python
+        uses: actions/setup-python@v5.6.0
+        with:
+          python-version: 3.13.2
+      - name: Install API dependencies
+        run: npm ci
+      - name: Install Robot dependencies
+        working-directory: RobotFramework
+        run: python -m pip install --disable-pip-version-check -r requirements.txt
+      - name: Start API
+        run: node src/server.js > api.log 2>&1 &
+      - name: Wait for API
+        run: |
+          for attempt in {1..60}; do
+            if curl --fail --silent "$BASE_URL/usuarios" > /dev/null; then exit 0; fi
+            sleep 2
+          done
+          cat api.log
+          exit 1
+      - name: Run Robot Framework
+        working-directory: RobotFramework
+        run: robot --outputdir results tests
+
+  restassured:
+    name: RestAssured
+    runs-on: ubuntu-24.04
+    services:
+      mongodb:
+        image: mongo:8.0.12
+        ports:
+          - 27017:27017
+      redis:
+        image: redis:7.4.5
+        ports:
+          - 6379:6379
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
+      - name: Setup Node.js
+        uses: actions/setup-node@v4.4.0
+        with:
+          node-version: 22.14.0
+      - name: Setup Java
+        uses: actions/setup-java@v4.7.1
+        with:
+          distribution: temurin
+          java-version: 17.0.14
+          cache: maven
+      - name: Install API dependencies
+        run: npm ci
+      - name: Start API
+        run: node src/server.js > api.log 2>&1 &
+      - name: Wait for API
+        run: |
+          for attempt in {1..60}; do
+            if curl --fail --silent "$BASE_URL/usuarios" > /dev/null; then exit 0; fi
+            sleep 2
+          done
+          cat api.log
+          exit 1
+      - name: Run RestAssured
+        working-directory: RestAssured
+        run: mvn --batch-mode test
+
+  behave:
+    name: Behave
+    runs-on: ubuntu-24.04
+    services:
+      mongodb:
+        image: mongo:8.0.12
+        ports:
+          - 27017:27017
+      redis:
+        image: redis:7.4.5
+        ports:
+          - 6379:6379
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
+      - name: Setup Node.js
+        uses: actions/setup-node@v4.4.0
+        with:
+          node-version: 22.14.0
+      - name: Setup Python
+        uses: actions/setup-python@v5.6.0
+        with:
+          python-version: 3.13.2
+      - name: Install API dependencies
+        run: npm ci
+      - name: Install Behave dependencies
+        working-directory: Behave
+        run: python -m pip install --disable-pip-version-check -r requirements.txt
+      - name: Start API
+        run: node src/server.js > api.log 2>&1 &
+      - name: Wait for API
+        run: |
+          for attempt in {1..60}; do
+            if curl --fail --silent "$BASE_URL/usuarios" > /dev/null; then exit 0; fi
+            sleep 2
+          done
+          cat api.log
+          exit 1
+      - name: Run Behave
+        working-directory: Behave
+        run: behave
