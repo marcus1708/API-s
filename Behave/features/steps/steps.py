@@ -339,7 +339,7 @@ def step_dd_healthy(context):
 @given('o subscriber PubSub está conectado ao canal "{channel}"')
 def step_pubsub_connect(context, channel):
     cli = _pubsub_client(context)
-    if context._pubsub_connected:
+    if context.__dict__.get("_pubsub_connected", False):
         return
     context._pubsub_channel = channel
     pubsub = cli.pubsub()
