@@ -1,0 +1,17 @@
+{
+  "name": "cypress-api-tests",
+  "version": "1.0.0",
+  "description": "Projeto Cypress para testes de API (CRUD de usuarios, Redis por comportamento observavel e DataDog com check honesto)",
+  "private": true,
+  "scripts": {
+    "test": "cypress run",
+    "test:headed": "cypress run --headed",
+    "open": "cypress open"
+  },
+  "dependencies": {
+    "redis": "4.7.0"
+  },
+  "devDependencies": {
+    "cypress": "13.15.2"
+  }
+}

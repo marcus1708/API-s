@@ -1,0 +1,16 @@
+{
+  "name": "playwright-api-usuarios",
+  "version": "1.0.0",
+  "description": "Testes Playwright API para endpoints /usuarios",
+  "type": "commonjs",
+  "scripts": {
+    "test": "npx playwright test",
+    "test:headed": "npx playwright test --headed",
+    "test:list": "npx playwright test --list"
+  },
+  "dependencies": {
+    "@playwright/test": "1.51.0",
+    "dotenv": "16.4.7",
+    "redis": "4.7.0"
+  }
+}
