@@ -1,0 +1,11 @@
+node_modules/
+
+# Test outputs and local environments
+.env
+.venv/
+__pycache__/
+.pytest_cache/
+results/
+allure-results/
+playwright-report/
+test-results/

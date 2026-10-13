@@ -1,5 +1,5 @@
 const Usuario = require('../models/Usuario');
-const { redis } = require('../config/redis');
+const { redis, publishUserEvent } = require('../config/redis');
 
 const CACHE_KEY = 'usuarios:todos';
 const CACHE_TTL = 60;
@@ -32,6 +32,14 @@ module.exports = {
 
             // Invalida cache da lista
             await redis.del(CACHE_KEY);
+
+            // Publica evento de criação
+            await publishUserEvent({
+                type: 'usuario.created',
+                id: usuario._id,
+                method: 'POST',
+                path: '/usuarios'
+            });
 
             return res.status(201).json({
                 _id: usuario._id,
@@ -94,6 +102,13 @@ module.exports = {
                 `💾 Cache armazenado no Redis por ${CACHE_TTL}s`
             );
 
+            // Publica evento de listagem
+            await publishUserEvent({
+                type: 'usuario.listed',
+                method: 'GET',
+                path: '/usuarios'
+            });
+
             return res.status(200).json(response);
 
         } catch (err) {
@@ -155,6 +170,14 @@ async show(req, res) {
                 `💾 Cache ${cacheKey} armazenado por ${cacheTTL}s`
             );
 
+            // Publica evento de busca por id
+            await publishUserEvent({
+                type: 'usuario.fetched',
+                id: id,
+                method: 'GET',
+                path: `/usuarios/${id}`
+            });
+
             return res.status(200).json(response);
 
         } catch (err) {
@@ -187,6 +210,14 @@ async show(req, res) {
             // Invalida cache da lista
             await redis.del(CACHE_KEY);
             await redis.del(`usuario:${req.params.id}`);
+
+            // Publica evento de atualização completa
+            await publishUserEvent({
+                type: 'usuario.updated',
+                id: req.params.id,
+                method: 'PUT',
+                path: `/usuarios/${req.params.id}`
+            });
 
             return res.status(200).json({
                 message: "Dados do usuario atualizados"
@@ -225,6 +256,14 @@ async show(req, res) {
             await redis.del(CACHE_KEY);
             await redis.del(`usuario:${req.params.id}`);
 
+            // Publica evento de atualização parcial
+            await publishUserEvent({
+                type: 'usuario.patched',
+                id: req.params.id,
+                method: 'PATCH',
+                path: `/usuarios/${req.params.id}`
+            });
+
             return res.status(200).json({
                 message: "Dados do usuario atualizados"
             });
@@ -259,6 +298,14 @@ async show(req, res) {
             // Invalida cache da lista
             await redis.del(CACHE_KEY);
             await redis.del(`usuario:${req.params.id}`);
+
+            // Publica evento de exclusão
+            await publishUserEvent({
+                type: 'usuario.deleted',
+                id: req.params.id,
+                method: 'DELETE',
+                path: `/usuarios/${req.params.id}`
+            });
 
             return res.status(200).json({
                 message: "Usuario excluído"
