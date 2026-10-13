@@ -1,0 +1,223 @@
+🛒 API de Gerenciamento de Compras
+
+API REST desenvolvida em Node.js, Express e MongoDB (Mongoose) para gerenciamento de:
+
+Usuários
+Produtos
+Lojas
+Listas de Compras
+
+O projeto foi construído com foco em:
+
+Integridade dos dados
+Relacionamentos entre entidades
+Regras de negócio
+Testes de API
+Documentação Swagger
+
+🚀 Principais Funcionalidades
+
+👤 Usuários
+Cadastro de usuários
+Consulta individual e listagem
+Atualização total (PUT)
+Atualização parcial (PATCH)
+Exclusão com validação de vínculo
+
+🏪 Lojas
+Cadastro e gerenciamento de lojas
+Consulta individual e listagem
+Atualização total e parcial
+Exclusão protegida por regras de negócio
+
+📦 Produtos
+Cadastro de produtos
+Controle de preço e quantidade
+Atualização total e parcial
+Exclusão condicionada ao status das listas
+
+📋 Lista de Compras
+Associação entre usuário, loja e produto
+Controle de quantidade e preço histórico
+Validação automática de relacionamentos
+Controle de status da lista
+Prevenção de duplicidade
+Limite de itens por lista
+
+🛠️ Regras de Negócio Implementadas
+Integridade Referencial
+
+Não é permitido excluir:
+
+Usuário vinculado a lista
+Loja vinculada a lista
+Produto vinculado a lista ativa
+
+Exemplo:
+
+Produto → Lista ATIVA
+↓
+Exclusão bloqueada
+
+Retorno:
+
+409 Conflict
+Validação de Existência
+
+Ao criar uma lista, a API valida se existem:
+
+Usuário
+Loja
+Produto
+
+Caso algum ID não exista:
+
+404 Not Found
+Campos Obrigatórios
+
+Validação dos campos obrigatórios em todas as entidades.
+
+Exemplos:
+
+Nome obrigatório
+Email obrigatório
+Quantidade maior que zero
+Preço não negativo
+Prevenção de Duplicidade
+
+Usuários com mesmo email não podem ser cadastrados.
+
+Produtos duplicados não são recriados dentro da mesma lista.
+
+Incremento Automático de Quantidade
+
+Quando o mesmo produto é adicionado novamente para o mesmo:
+
+usuário
+loja
+produto
+
+o sistema atualiza a quantidade existente ao invés de criar um novo registro.
+
+Exemplo
+
+Lista atual:
+
+{
+  "produto": "Arroz",
+  "quantidade": 5
+}
+
+Nova inclusão:
+
+{
+  "produto": "Arroz",
+  "quantidade": 2
+}
+
+Resultado:
+
+{
+  "produto": "Arroz",
+  "quantidade": 7
+}
+Limite Máximo de Itens
+
+Cada combinação:
+
+Usuário + Loja
+
+pode possuir até:
+
+100 itens
+
+Ao atingir o limite:
+
+400 Bad Request
+
+Resposta:
+
+{
+  "message": "Limite máximo de 100 itens na lista atingido"
+}
+📋 Status da Lista
+
+Cada item da lista possui um status:
+
+Status	Descrição
+ATIVA	Lista em utilização
+FINALIZADA	Compra concluída
+CANCELADA	Lista encerrada sem conclusão
+
+Valor padrão:
+
+{
+  "status": "ATIVA"
+}
+🔒 Regra de Exclusão de Produtos
+
+Produtos vinculados a listas ativas não podem ser removidos.
+
+Exemplo
+Produto
+↓
+Lista ATIVA
+↓
+Exclusão bloqueada
+
+Resposta:
+
+409 Conflict
+{
+  "message": "Não é permitido excluir um produto vinculado a uma lista ativa"
+}
+
+Produtos vinculados apenas a listas:
+
+FINALIZADAS
+CANCELADAS
+
+podem ser removidos normalmente.
+
+📊 Códigos HTTP Utilizados
+Código	Significado
+200	Operação realizada com sucesso
+201	Recurso criado
+400	Dados inválidos
+404	Recurso não encontrado
+409	Conflito de regra de negócio
+500	Erro interno do servidor
+📚 Documentação Swagger
+
+Após iniciar a aplicação:
+
+npm start
+
+Acesse:
+
+http://localhost:3333/api-docs
+💻 Tecnologias
+Node.js
+Express
+MongoDB
+Mongoose
+Swagger UI
+YAML
+Dotenv
+🎯 Objetivos do Projeto
+
+Este projeto foi desenvolvido para:
+
+Prática de desenvolvimento Backend
+Exercícios de modelagem de APIs REST
+Estudos de MongoDB e Mongoose
+Testes manuais e automatizados de API
+Aplicação de regras de negócio e integridade referencial
+
+As principais implementações recentes incluem:
+
+✅ Controle de status das listas
+✅ Limite de 100 itens por lista
+✅ Incremento automático de quantidade para produtos repetidos
+✅ Bloqueio de exclusão de produtos vinculados a listas ativas
+✅ Validação de integridade referencial entre entidades
