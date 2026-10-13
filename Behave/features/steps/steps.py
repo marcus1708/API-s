@@ -57,14 +57,22 @@ def _redis_client(context):
 
 
 def _pubsub_client(context):
-    """Cria (lazy) e retorna um cliente Redis PubSub dedicado."""
-    if not hasattr(context, "_pubsub_cli") or context._pubsub_cli is None:
-        redis_url = os.environ.get("REDIS_URL", "redis://localhost:6379")
-        context._pubsub_cli = redis.from_url(redis_url, decode_responses=True)
-        context._pubsub_received = []
-        context._pubsub_lock = threading.Lock()
-        context._pubsub_connected = False
+    if context.__dict__.get("_pubsub_cli") is None:
+        import os
+        import redis
+
+        redis_url = os.getenv(
+            "REDIS_URL",
+            "redis://127.0.0.1:6379"
+        )
+
+        context._pubsub_cli = redis.Redis.from_url(
+            redis_url,
+            decode_responses=True
+        )
+
     return context._pubsub_cli
+
 
 
 def _scenario_uuid(context):
